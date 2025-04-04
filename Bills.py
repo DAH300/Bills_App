@@ -52,6 +52,8 @@ class Bill:
         self.paid = paid
         self.link = link
 
+
+
     def to_dict(self):
         return {
             "name": self.name,
@@ -98,6 +100,8 @@ class BillTrackerApp:
         self.root = root
         self.root.title("Bill Tracker")
         self.bills = self.load_bills()
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
 
                 # Menu Bar
         menubar = tk.Menu(self.root)
@@ -118,11 +122,13 @@ class BillTrackerApp:
         self.root.geometry("1000x500")
 
         self.listbox = tk.Listbox(root, width=100, height=15)
-        self.listbox.grid(row=0, column=0, padx=10, pady=10)
+        self.listbox.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
         self.listbox.config(font=('Helvetica', 14))
 
         button_frame = tk.Frame(root)
-        button_frame.grid(row=1, column=0, pady=10)
+        button_frame.grid(row=1, column=0, pady=10, sticky="ew")
+        button_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
+
 
         tk.Button(button_frame, text="Add Bill", command=self.add_bill, font=("Helvetica", 14)).grid(row=0, column=0, padx=5)
         tk.Button(button_frame, text="Mark Paid/Unpaid", command=self.toggle_paid, font=("Helvetica", 14)).grid(row=0, column=1, padx=5)
