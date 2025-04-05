@@ -165,31 +165,31 @@ class BillTrackerApp:
             self.listbox.insert(tk.END, f"{i}. {bill.name} - ${bill.amount} - {status} {due_status}")
 
     def add_bill(self):
-        name = simpledialog.askstring("Bill Name", "Enter the bill name:")
+        name = simpledialog.askstring("Bill Name", "Enter the bill name:", parent=self.root)
         if not name:
             return
 
         try:
-            amount = float(simpledialog.askstring("Amount", "Enter the amount:"))
+            amount = float(simpledialog.askstring("Amount", "Enter the amount:", parent=self.root))
         except (TypeError, ValueError):
             messagebox.showerror("Error", "Invalid amount.")
             return
 
         fixed = messagebox.askyesno("Bill Type", "Is this a fixed bill amount?")
-        frequency = simpledialog.askstring("Frequency", "Enter bill frequency (Monthly, 6 Months, Yearly):", initialvalue="Monthly")
+        frequency = simpledialog.askstring("Frequency", "Enter bill frequency (Monthly, 6 Months, Yearly):", initialvalue="Monthly", parent=self.root)
         if frequency not in FREQUENCY_OPTIONS:
             messagebox.showerror("Error", "Invalid frequency. Use 'Monthly', '6 Months', or 'Yearly'.")
             return
 
-        due_date = simpledialog.askstring("Due Date", "Enter due date (YYYY-MM-DD):")
+        due_date = simpledialog.askstring("Due Date", "Enter due date (YYYY-MM-DD):", parent=self.root)
         try:
             datetime.strptime(due_date, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("Error", "Invalid date format.")
             return
 
-        fixed_day = simpledialog.askinteger("Fixed Due Day", "Enter a fixed day of the month (1-28) or leave blank:", minvalue=1, maxvalue=28)
-        link = simpledialog.askstring("Link", "Enter the bill's website link:")
+        fixed_day = simpledialog.askinteger("Fixed Due Day", "Enter a fixed day of the month (1-28) or leave blank:", minvalue=1, maxvalue=28, parent=self.root)
+        link = simpledialog.askstring("Link", "Enter the bill's website link:", parent=self.root)
         if not link:
             return
 
@@ -208,7 +208,7 @@ class BillTrackerApp:
 
         if not bill.fixed:
             try:
-                new_amount = float(simpledialog.askstring("New Amount", f"Enter new amount for {bill.name}:"))
+                new_amount = float(simpledialog.askstring("New Amount", f"Enter new amount for {bill.name}:", parent=self.root))
                 bill.amount = new_amount
             except (TypeError, ValueError):
                 messagebox.showerror("Error", "Invalid amount.")
@@ -270,6 +270,9 @@ class BillTrackerApp:
             history = json.load(f)
 
         history_window = tk.Toplevel(self.root)
+        history_window = tk.Toplevel(self.root)
+        history_window.transient(self.root)
+        history_window.focus_force()
         history_window.title("Bill Payment History")
         history_window.geometry("700x500")
 
