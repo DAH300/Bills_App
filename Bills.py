@@ -1,43 +1,57 @@
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.2"
 
 import tkinter as tk
 from tkinter import messagebox, simpledialog, ttk
 import json
+import os
 import webbrowser
 from pathlib import Path
 from datetime import datetime
 from dateutil.relativedelta import relativedelta  # Handles accurate month jumps
 import requests
+import subprocess
+import sys
+import shutil
+import tempfile
+import requests
 
 GITHUB_VERSION_URL = "https://raw.githubusercontent.com/DAH300/Bills_App/main/version.txt"
 SCRIPT_URL = "https://raw.githubusercontent.com/DAH300/Bills_App/main/Bills.py"
+REPO_URL = "https://raw.githubusercontent.com/DAH300/Bills_App/main"
+EXE_NAME = "Bills.exe"
 
 BILLS_FILE = Path("bills.json")
 HISTORY_FILE = Path("bill_history.json")
 
 FREQUENCY_OPTIONS = ["Monthly", "6 Months", "Yearly"]
 
-def check_for_update():
+def check_for_updates(self):
     try:
-        response = requests.get(GITHUB_VERSION_URL)
+        response = requests.get(f"{REPO_URL}/version.txt")
         latest_version = response.text.strip()
-        if latest_version != APP_VERSION:
-            if messagebox.askyesno("Update Available", f"A new version ({latest_version}) is available. Update now?"):
-                update_app()
-        else:
-            messagebox.showinfo("Up to Date", "You're using the latest version.")
-    except Exception as e:
-        messagebox.showerror("Update Check Failed", str(e))
 
-def update_app():
-    try:
-        response = requests.get(SCRIPT_URL)
-        with open(__file__, "w", encoding="utf-8") as f:
-            f.write(response.text)
-        messagebox.showinfo("Update Complete", "App has been updated. Please restart the application.")
-        root.quit()
+        if latest_version != APP_VERSION:
+            answer = messagebox.askyesno("Update Available", f"Version {latest_version} is available. Do you want to update?")
+            if answer:
+                self.download_and_launch_updater(latest_version)
     except Exception as e:
-        messagebox.showerror("Update Failed", str(e))
+        messagebox.showerror("Update Error", str(e))
+
+def download_and_launch_updater(self, latest_version):
+    temp_dir = tempfile.mkdtemp()
+    new_exe_path = os.path.join(temp_dir, EXE_NAME)
+    updater_path = os.path.join(os.path.dirname(sys.executable), "updater.exe")
+
+    # Download the new exe from GitHub releases
+    download_url = f"{REPO_URL}/releases/{EXE_NAME}"  # Adjust based on your hosting
+    with requests.get(download_url, stream=True) as r:
+        with open(new_exe_path, 'wb') as f:
+            shutil.copyfileobj(r.raw, f)
+
+    # Launch updater
+    subprocess.Popen([updater_path, sys.executable, new_exe_path])
+    self.root.quit()
+
 
 
 
