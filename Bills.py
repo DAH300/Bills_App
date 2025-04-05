@@ -49,7 +49,7 @@ def download_and_launch_updater(self, latest_version):
             shutil.copyfileobj(r.raw, f)
 
     # Launch updater
-    subprocess.Popen([updater_path, sys.executable, new_exe_path])
+    subprocess.Popen([updater_path, sys.argv[0], new_exe_path])
     self.root.quit()
 
 
@@ -121,7 +121,7 @@ class BillTrackerApp:
         menubar = tk.Menu(self.root)
 
         file_menu = tk.Menu(menubar, tearoff=0)
-        file_menu.add_command(label="Check for Updates", command=check_for_update)
+        file_menu.add_command(label="Check for Updates", command=check_for_updates)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
         menubar.add_cascade(label="File", menu=file_menu)
@@ -155,7 +155,7 @@ class BillTrackerApp:
     def show_about(self):
         messagebox.showinfo(
             "About",
-            "Bill Tracker App\nVersion 1.0.0\nCreated by Dwayne Howell\nGitHub: https://github.com/DAH300/Bills_App"
+            "Bill Tracker App\nVersion 1.0.2\nCreated by Dwayne Howell\nGitHub: https://github.com/DAH300/Bills_App"
     )
 
 
