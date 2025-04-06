@@ -1,4 +1,4 @@
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.0.3"
 
 import tkinter as tk
 from tkinter import messagebox, simpledialog, ttk
@@ -24,34 +24,6 @@ BILLS_FILE = Path("bills.json")
 HISTORY_FILE = Path("bill_history.json")
 
 FREQUENCY_OPTIONS = ["Monthly", "6 Months", "Yearly"]
-
-def check_for_updates(self):
-    try:
-        response = requests.get(f"{REPO_URL}/version.txt")
-        latest_version = response.text.strip()
-
-        if latest_version != APP_VERSION:
-            answer = messagebox.askyesno("Update Available", f"Version {latest_version} is available. Do you want to update?")
-            if answer:
-                self.download_and_launch_updater(latest_version)
-    except Exception as e:
-        messagebox.showerror("Update Error", str(e))
-
-def download_and_launch_updater(self, latest_version):
-    temp_dir = tempfile.mkdtemp()
-    new_exe_path = os.path.join(temp_dir, EXE_NAME)
-    updater_path = os.path.join(os.path.dirname(sys.executable), "updater.exe")
-
-    # Download the new exe from GitHub releases
-    download_url = f"{REPO_URL}/releases/{EXE_NAME}"  # Adjust based on your hosting
-    with requests.get(download_url, stream=True) as r:
-        with open(new_exe_path, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
-
-    # Launch updater
-    subprocess.Popen([updater_path, sys.argv[0], new_exe_path])
-    self.root.quit()
-
 
 
 
@@ -121,7 +93,7 @@ class BillTrackerApp:
         menubar = tk.Menu(self.root)
 
         file_menu = tk.Menu(menubar, tearoff=0)
-        file_menu.add_command(label="Check for Updates", command=check_for_updates)
+        file_menu.add_command(label="Check for Updates", command=self.check_for_updates)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
         menubar.add_cascade(label="File", menu=file_menu)
@@ -155,8 +127,51 @@ class BillTrackerApp:
     def show_about(self):
         messagebox.showinfo(
             "About",
-            "Bill Tracker App\nVersion 1.0.2\nCreated by Dwayne Howell\nGitHub: https://github.com/DAH300/Bills_App"
+            f"Bill Tracker App\nVersion {APP_VERSION}\nCreated by Dwayne Howell\nGitHub: https://github.com/DAH300/Bills_App"
     )
+        
+    def check_for_updates(self):
+        try:
+            VERSION_URL = "https://raw.githubusercontent.com/DAH300/Bills_App/main/version.txt"
+
+            response = requests.get(VERSION_URL)
+            if response.status_code != 200:
+                messagebox.showerror("Update Error", f"Failed to check for updates.\nStatus: {response.status_code}")
+                return
+
+            latest_version = response.text.strip()
+            if latest_version == APP_VERSION:
+                messagebox.showinfo("Up to Date", f"You're already on the latest version ({APP_VERSION}).")
+                return
+            
+            
+            DOWNLOAD_URL = f"https://github.com/DAH300/Bills_App/releases/download/{latest_version}/Bills.exe"
+
+            # Ask user if they want to update
+            if not messagebox.askyesno("Update Available", f"A new version ({latest_version}) is available. Do you want to update?"):
+                return
+
+            # Download the update
+            tmp_dir = tempfile.mkdtemp()
+            new_exe_path = os.path.join(tmp_dir, "Bills_New.exe")
+            with requests.get(DOWNLOAD_URL, stream=True) as r:
+                r.raise_for_status()
+                with open(new_exe_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+            # Path to updater.exe (assumes it's next to the current .exe)
+            updater_path = os.path.join(os.path.dirname(sys.argv[0]), "updater.exe")
+            if not os.path.exists(updater_path):
+                messagebox.showerror("Update Error", "Updater not found. Please ensure updater.exe is in the same folder.")
+                return
+
+            subprocess.Popen([updater_path, sys.argv[0], new_exe_path])
+            self.root.quit()
+
+        except Exception as e:
+            messagebox.showerror("Update Error", f"An error occurred:\n{str(e)}")
+
 
 
     def load_bills(self):
@@ -283,7 +298,6 @@ class BillTrackerApp:
         with open(HISTORY_FILE, "r") as f:
             history = json.load(f)
 
-        history_window = tk.Toplevel(self.root)
         history_window = tk.Toplevel(self.root)
         history_window.transient(self.root)
         history_window.focus_force()
